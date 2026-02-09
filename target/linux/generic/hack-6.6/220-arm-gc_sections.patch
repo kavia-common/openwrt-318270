@@ -1,0 +1,23 @@
+From: OpenWrt Developers
+Subject: arm: enable gc-sections for size optimization
+
+Enable --gc-sections linker option for ARM to reduce
+kernel image size on embedded devices.
+
+Signed-off-by: OpenWrt Developers
+---
+ arch/arm/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -50,6 +50,9 @@ AS		+= -EL
+ LD		+= -EL
+ endif
+ 
++KBUILD_CFLAGS_KERNEL += -ffunction-sections -fdata-sections
++KBUILD_LDFLAGS_vmlinux += --gc-sections
++
+ #
+ # The Scalar Replacement of Aggregates (SRA) optimization pass in GCC 4.9 and
+ # later may result in code being generated that handles signed short and signed

@@ -1,0 +1,40 @@
+From: OpenWrt Developers
+Subject: mtd: add OpenWrt mtdsplit support
+
+This adds support for splitting MTD partitions based on
+OpenWrt-specific partition formats.
+
+Signed-off-by: OpenWrt Developers
+---
+ drivers/mtd/Kconfig  |  8 ++++++++
+ drivers/mtd/Makefile |  2 ++
+ 2 files changed, 10 insertions(+)
+
+--- a/drivers/mtd/Kconfig
++++ b/drivers/mtd/Kconfig
+@@ -12,6 +12,14 @@ menuconfig MTD
+ 
+ if MTD
+ 
++config MTD_SPLIT
++	bool "MTD split support"
++	help
++	  Generic MTD split support for embedded devices.
++	  This allows automatic partition splitting based on
++	  OpenWrt partition layouts.
++
++
+ config MTD_TESTS
+ 	tristate "MTD tests support (DANGEROUS)"
+ 	depends on m
+--- a/drivers/mtd/Makefile
++++ b/drivers/mtd/Makefile
+@@ -9,6 +9,8 @@ mtd-y				:= mtdcore.o mtdsuper.o mtdconc
+ 
+ obj-y				+= parsers/
+ 
++obj-$(CONFIG_MTD_SPLIT)		+= mtdsplit/
++
+ # 'Users' - code which presents functionality to userspace.
+ obj-$(CONFIG_MTD_BLKDEVS)	+= mtd_blkdevs.o
+ obj-$(CONFIG_MTD_BLOCK)		+= mtdblock.o
