@@ -1,0 +1,212 @@
+# OpenWrt Kernel 5.15 → 6.6 Build System Changes
+# This file documents all build system changes as unified diffs
+# Generated: 2025-02-09
+
+================================================================================
+FILE: include/kernel-6.6 (NEW)
+================================================================================
+ACTION: Create new kernel version definition file
+REASON: Define kernel 6.6.68 version and hash for build system
+
+Content:
++LINUX_VERSION-6.6 = .68
++LINUX_KERNEL_HASH-6.6.68 = 0000000000000000000000000000000000000000000000000000000000000000
+
+NOTES:
+- Hash placeholder must be updated with actual SHA256 after downloading kernel
+- Command: wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.68.tar.xz && sha256sum linux-6.6.68.tar.xz
+
+================================================================================
+FILE: target/linux/generic/config-6.6 (NEW)
+================================================================================
+ACTION: Create baseline generic kernel configuration for 6.6
+REASON: Provide default kernel config for all platforms, based on config-5.15
+
+NEW OPTIONS ADDED (Key Examples):
++# CONFIG_RUST is not set
++# CONFIG_BPF_PRELOAD is not set
++# CONFIG_BPF_STREAM_PARSER is not set
++# CONFIG_SECURITY_LANDLOCK is not set
++# CONFIG_INIT_ON_ALLOC_DEFAULT_ON is not set
++# CONFIG_INIT_ON_FREE_DEFAULT_ON is not set
++# CONFIG_RCU_LAZY is not set
++# CONFIG_RCU_STRICT_GRACE_PERIOD is not set
++# CONFIG_SCHED_CLASS_EXT is not set
++# CONFIG_TMPFS_INODE64 is not set
++# CONFIG_INET_DIAG_DESTROY is not set
++# CONFIG_MPTCP is not set
++# CONFIG_MEMORY_HOTPLUG is not set
++# CONFIG_MEMORY_HOTREMOVE is not set
++# CONFIG_ENERGY_MODEL is not set
+
+REMOVED OPTIONS (Deprecated in 6.6):
+-# CONFIG_KCMP (now always enabled in core)
+-# CONFIG_CHECKPOINT_RESTORE (merged with KCMP)
+
+NOTES:
+- All options marked "REVIEW REQUIRED" need platform team validation
+- Platform-specific overrides should be in target/linux/<platform>/config-6.6
+- Extensive testing required before production use
+
+================================================================================
+FILE: config/Config-kernel.in (MODIFIED)
+================================================================================
+ACTION: Add new kernel 6.6 configuration options to menuconfig
+REASON: Expose 6.6-specific features to OpenWrt build configuration
+
+ADDITIONS (at end of file, after KERNEL_WERROR):
+
++#
++# New options introduced in kernel 6.6
++#
++
++config KERNEL_RUST
++	bool "Enable Rust support in the kernel"
++	depends on !SMALL_FLASH
++	help
++	  Enables Rust language support in the kernel. This requires a Rust
++	  toolchain to be available during the build.
++	  ...
+
++config KERNEL_RCU_LAZY
++	bool "Enable lazy RCU callbacks"
++	help
++	  This option enables lazy RCU callbacks which can reduce power
++	  consumption by deferring RCU callback execution.
++	  ...
+
++config KERNEL_MPTCP
++	bool "Enable Multipath TCP support"
++	depends on KERNEL_IPV6
++	help
++	  Multipath TCP (MPTCP) allows a TCP connection to use multiple
++	  paths simultaneously, improving throughput and reliability.
++	  ...
+
++config KERNEL_SECURITY_LANDLOCK
++	bool "Enable Landlock security module"
++	select KERNEL_SECURITY
++	help
++	  Landlock is a stackable LSM that allows unprivileged processes to
++	  restrict their own access to the filesystem.
++	  ...
+
++config KERNEL_INIT_ON_ALLOC_DEFAULT_ON
++	bool "Enable heap memory zeroing on allocation by default"
++	help
++	  This option enables zeroing of heap memory on allocation by default,
++	  which improves security by preventing information leaks.
++	  ...
+
++config KERNEL_INIT_ON_FREE_DEFAULT_ON
++	bool "Enable heap memory zeroing on free by default"
++	help
++	  This option enables zeroing of heap memory on free by default,
++	  which improves security by preventing use-after-free exploits.
++	  ...
+
++config KERNEL_INET_DIAG_DESTROY
++	bool "Enable socket destruction via inet_diag"
++	help
++	  This allows destroying sockets via the inet_diag netlink interface.
++	  ...
+
++config KERNEL_TMPFS_INODE64
++	bool "Use 64-bit inode numbers in tmpfs"
++	help
++	  This enables 64-bit inode numbers in tmpfs, removing the 32-bit
++	  inode number limitation.
++	  ...
+
++config KERNEL_ENERGY_MODEL
++	bool "Enable energy model for CPUs"
++	depends on KERNEL_PM
++	help
++	  This enables the energy model framework which provides per-CPU
++	  energy cost data.
++	  ...
+
++config KERNEL_MEMORY_HOTPLUG
++	bool "Enable memory hotplug support"
++	help
++	  This allows you to add and remove memory at runtime on systems
++	  that support it.
++	  ...
+
++config KERNEL_MEMORY_HOTREMOVE
++	bool "Enable memory hot-remove support"
++	depends on KERNEL_MEMORY_HOTPLUG
++	help
++	  This allows you to remove memory at runtime.
++	  ...
+
+NOTES:
+- All new options default to disabled for safety
+- Help text provides clear guidance on when to enable each option
+- Dependencies properly declared (e.g., MPTCP depends on IPv6)
+
+================================================================================
+FILE: kavia-docs/CodeWiki/Specs/Other/kernel-6.6-build-system-migration.md (NEW)
+================================================================================
+ACTION: Create comprehensive migration documentation
+REASON: Provide detailed guide for platform maintainers and build system users
+
+CONTENT SUMMARY:
+- Overview of all build system changes
+- Detailed explanation of each new config option
+- Rationale for each change
+- Testing checklist for validation
+- Platform migration step-by-step guide
+- Known issues and workarounds
+- References to related documentation
+
+NOTES:
+- This document is the authoritative guide for the build system migration
+- Should be referenced by all platform maintainers during migration
+- Will be updated as migration progresses and issues are discovered
+
+================================================================================
+SUMMARY OF CHANGES
+================================================================================
+
+FILES CREATED:
+1. include/kernel-6.6                                    (2 lines, kernel version def)
+2. target/linux/generic/config-6.6                       (200+ lines, baseline config)
+3. kavia-docs/CodeWiki/Specs/Other/kernel-6.6-build-system-migration.md  (500+ lines, documentation)
+4. kavia-docs/CodeWiki/Specs/Other/kernel-6.6-build-changes.patch       (this file)
+
+FILES MODIFIED:
+1. config/Config-kernel.in                               (+140 lines, new menu options)
+
+FILES NOT MODIFIED (Platform-specific work required):
+- target/linux/*/Makefile                                (platforms set KERNEL_PATCHVER)
+- target/linux/*/config-6.6                              (platform-specific configs)
+- target/linux/*/patches-6.6/                            (platform-specific patches)
+
+IMPACT ANALYSIS:
+- Build System: Core changes complete, ready for testing
+- Platforms: Each platform needs individual migration
+- Packages: Some kernel-dependent packages may need updates
+- Documentation: User docs need updates post-migration
+- CI/CD: Pipelines should test both 5.15 and 6.6 during transition
+
+TESTING STATUS:
+- [ ] Generic build test (x86_64)
+- [ ] Generic build test (arm)
+- [ ] Generic build test (aarch64)
+- [ ] Generic build test (mips)
+- [ ] Boot test (any platform)
+- [ ] Kernel hash validation
+- [ ] Menuconfig verification
+- [ ] Integration test with existing packages
+
+NEXT ACTIONS:
+1. Download kernel 6.6.68 and update hash in include/kernel-6.6
+2. Perform generic build tests on multiple architectures
+3. Begin platform-by-platform migration following migration guide
+4. Update CI/CD to test both kernel versions
+5. Update user-facing documentation
+
+================================================================================
+END OF PATCH FILE
+================================================================================

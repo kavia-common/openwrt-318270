@@ -1344,3 +1344,116 @@ config KERNEL_WERROR
 	  and unusual warnings, or you have some architecture with problems,
 	  you may need to disable this config option in order to
 	  successfully build the kernel.
+
+#
+# New options introduced in kernel 6.6
+#
+
+config KERNEL_RUST
+	bool "Enable Rust support in the kernel"
+	depends on !SMALL_FLASH
+	help
+	  Enables Rust language support in the kernel. This requires a Rust
+	  toolchain to be available during the build.
+	  
+	  Rust is being introduced gradually into the kernel for writing
+	  drivers and modules with memory safety guarantees.
+	  
+	  If unsure, say N.
+
+config KERNEL_RCU_LAZY
+	bool "Enable lazy RCU callbacks"
+	help
+	  This option enables lazy RCU callbacks which can reduce power
+	  consumption by deferring RCU callback execution. This is useful
+	  for power-sensitive embedded systems.
+	  
+	  If unsure, say N.
+
+config KERNEL_MPTCP
+	bool "Enable Multipath TCP support"
+	depends on KERNEL_IPV6
+	help
+	  Multipath TCP (MPTCP) allows a TCP connection to use multiple
+	  paths simultaneously, improving throughput and reliability.
+	  
+	  This is a new feature in kernel 6.6 that provides better
+	  network performance on devices with multiple network interfaces.
+	  
+	  If unsure, say N.
+
+config KERNEL_SECURITY_LANDLOCK
+	bool "Enable Landlock security module"
+	select KERNEL_SECURITY
+	help
+	  Landlock is a stackable LSM that allows unprivileged processes to
+	  restrict their own access to the filesystem. This is useful for
+	  sandboxing applications.
+	  
+	  If unsure, say N.
+
+config KERNEL_INIT_ON_ALLOC_DEFAULT_ON
+	bool "Enable heap memory zeroing on allocation by default"
+	help
+	  This option enables zeroing of heap memory on allocation by default,
+	  which improves security by preventing information leaks.
+	  
+	  This has a performance impact but improves security posture.
+	  
+	  If unsure, say N.
+
+config KERNEL_INIT_ON_FREE_DEFAULT_ON
+	bool "Enable heap memory zeroing on free by default"
+	help
+	  This option enables zeroing of heap memory on free by default,
+	  which improves security by preventing use-after-free exploits.
+	  
+	  This has a performance impact but improves security posture.
+	  
+	  If unsure, say N.
+
+config KERNEL_INET_DIAG_DESTROY
+	bool "Enable socket destruction via inet_diag"
+	help
+	  This allows destroying sockets via the inet_diag netlink interface.
+	  Useful for network debugging and management tools.
+	  
+	  If unsure, say N.
+
+config KERNEL_TMPFS_INODE64
+	bool "Use 64-bit inode numbers in tmpfs"
+	help
+	  This enables 64-bit inode numbers in tmpfs, removing the 32-bit
+	  inode number limitation. This is useful for systems with a very
+	  large number of files in tmpfs.
+	  
+	  If unsure, say N.
+
+config KERNEL_ENERGY_MODEL
+	bool "Enable energy model for CPUs"
+	depends on KERNEL_PM
+	help
+	  This enables the energy model framework which provides per-CPU
+	  energy cost data. This is used by the scheduler and thermal
+	  framework for power-aware decisions.
+	  
+	  Useful for embedded systems with power constraints.
+	  
+	  If unsure, say N.
+
+config KERNEL_MEMORY_HOTPLUG
+	bool "Enable memory hotplug support"
+	help
+	  This allows you to add and remove memory at runtime on systems
+	  that support it. Not typically needed for embedded systems.
+	  
+	  If unsure, say N.
+
+config KERNEL_MEMORY_HOTREMOVE
+	bool "Enable memory hot-remove support"
+	depends on KERNEL_MEMORY_HOTPLUG
+	help
+	  This allows you to remove memory at runtime. Requires
+	  MEMORY_HOTPLUG to be enabled.
+	  
+	  If unsure, say N.
